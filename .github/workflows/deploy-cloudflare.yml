@@ -22,6 +22,19 @@ jobs:
     - name: Install dependencies
       run: npm install
       
+    - name: Configure Worker settings
+      run: |
+        node -e "
+        const fs = require('fs');
+        const config = JSON.parse(fs.readFileSync('wrangler.worker.jsonc', 'utf8').replace(/\/\/.*/g, '').replace(/\/\*[\s\S]*?\*\//g, ''));
+        config.vars.proxy_url = process.env.PROXY_URL || '';
+        config.vars.token_prefix = process.env.TOKEN_PREFIX || '/';
+        fs.writeFileSync('wrangler.worker.jsonc', JSON.stringify(config, null, 2));
+        "
+      env:
+        PROXY_URL: ${{ secrets.PROXY_URL }}
+        TOKEN_PREFIX: ${{ secrets.TOKEN_PREFIX }}
+      
     - name: Deploy to Cloudflare Worker
       run: npm run deploy-cf-worker
       env:
@@ -42,6 +55,19 @@ jobs:
         
     - name: Install dependencies
       run: npm install
+      
+    - name: Configure Pages settings
+      run: |
+        node -e "
+        const fs = require('fs');
+        const config = JSON.parse(fs.readFileSync('wrangler.jsonc', 'utf8').replace(/\/\/.*/g, '').replace(/\/\*[\s\S]*?\*\//g, ''));
+        config.vars.proxy_url = process.env.PROXY_URL || '';
+        config.vars.token_prefix = process.env.TOKEN_PREFIX || '/';
+        fs.writeFileSync('wrangler.jsonc', JSON.stringify(config, null, 2));
+        "
+      env:
+        PROXY_URL: ${{ secrets.PROXY_URL }}
+        TOKEN_PREFIX: ${{ secrets.TOKEN_PREFIX }}
       
     - name: Deploy to Cloudflare Pages
       run: npm run deploy-cf-page
